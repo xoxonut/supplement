@@ -3,8 +3,6 @@ package consumer
 import (
 	"sync"
 
-	"context"
-
 	"github.com/free5gc/openapi"
 	Nudm_UEAU "github.com/free5gc/openapi/Nudm_UEAuthentication"
 	"github.com/free5gc/openapi/models"
@@ -50,13 +48,5 @@ func (s *nudmService) SendGenerateAuthDataRequest(uri string,
 
 	// TODO: OAuth UDM Generate Auth Data Post
 	var authInfoResult models.AuthenticationInfoResult
-	ctx := context.Background()
-	err := error(nil)
-	authInfoResult, _, err = client.GenerateAuthDataApi.GenerateAuthData(
-		ctx, supiOrSuci, *authInfoReq,
-	)
-	if err != nil {
-		return nil, nil, err
-	}
 	return &authInfoResult, nil, nil
 }

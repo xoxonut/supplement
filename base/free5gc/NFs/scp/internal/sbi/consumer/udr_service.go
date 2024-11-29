@@ -1,7 +1,6 @@
 package consumer
 
 import (
-	"context"
 	"sync"
 
 	"github.com/free5gc/openapi"
@@ -44,12 +43,5 @@ func (s *nudrService) SendAuthSubsDataGet(uri string,
 
 	// TODO: OAuth UDR Auth Subs Data Get
 	var authSubs models.AuthenticationSubscription
-	ctx := context.Background()
-	authSubs, _, err := client.AuthenticationDataDocumentApi.QueryAuthSubsData(
-		ctx, supi, nil,
-	)
-	if err != nil {
-		return nil, nil, err
-	}
 	return &authSubs, nil, nil
 }

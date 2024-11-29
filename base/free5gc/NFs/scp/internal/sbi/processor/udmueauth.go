@@ -15,7 +15,8 @@ func (p *Processor) PostGenerateAuthData(
 	logger.ProxyLog.Debugln("[AUSF->UDM] Forward AUSF UE Authentication Request")
 
 	// TODO: Send request to target NF by setting correct uri
-	targetNfUri := p.Config().NrfUri()
+	var targetNfUri string
+
 	// TODO: Verify that the Information Elements (IEs) in the request or response body are correct
 	//       Recover and handle errors if the IEs are incorrect
 	response, problemDetails, err := p.Consumer().SendGenerateAuthDataRequest(targetNfUri, supiOrSuci, &authInfo)

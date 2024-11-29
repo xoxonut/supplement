@@ -1,7 +1,6 @@
 package processor
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/free5gc/openapi/models"
@@ -15,8 +14,8 @@ func (p *Processor) PostUeAutentications(
 	logger.ProxyLog.Debugln("[AMF->AUSF] Forward AMF UE Authentication Request")
 
 	// TODO: Send request to target NF by setting correct uri
-	targetNfUri := fmt.Sprintf("%s/nausf-auth/v1/ue-authentications", p.Config().NrfUri())
-	logger.ProxyLog.Debugf("Target NF URI: %s", targetNfUri)
+	var targetNfUri string
+
 	// TODO: Verify that the Information Elements (IEs) in the response body are correct
 	//       Recover and handle errors if the IEs are incorrect
 	response, problemDetails, err := p.Consumer().SendUeAuthPostRequest(targetNfUri, &authInfo)
@@ -42,8 +41,8 @@ func (p *Processor) PutUeAutenticationsConfirmation(
 	logger.ProxyLog.Debugln("[AMF->AUSF] Forward AMF UE Authentication Response")
 
 	// TODO: Send request to target NF by setting correct uri
-	targetNfUri := fmt.Sprintf("%s/nausf-auth/v1/ue-authentications/%s/5g-aka-confirmation", p.Config().NrfUri(), authCtxId)
-	logger.ProxyLog.Debugf("Target NF URI: %s", targetNfUri)
+	var targetNfUri string
+
 	// TODO: Verify that the Information Elements (IEs) in the response body are correct
 	//       Recover and handle errors if the IEs are incorrect
 	response, problemDetails, err := p.Consumer().SendAuth5gAkaConfirmRequest(targetNfUri, authCtxId, &confirmationData)
