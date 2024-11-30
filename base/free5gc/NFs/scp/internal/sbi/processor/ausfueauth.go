@@ -12,10 +12,10 @@ func (p *Processor) PostUeAutentications(
 	authInfo models.AuthenticationInfo,
 ) *HandlerResponse {
 	logger.ProxyLog.Debugln("[AMF->AUSF] Forward AMF UE Authentication Request")
-
+	logger.ProxyLog.Debugf("UE Authentication Request authInfo: %+v", authInfo)
 	// TODO: Send request to target NF by setting correct uri
-	var targetNfUri string
-
+	var targetNfUri = "http://ausf.free5gc.org:8000"
+	logger.ProxyLog.Debugf("NRF URI: %s", targetNfUri)
 	// TODO: Verify that the Information Elements (IEs) in the response body are correct
 	//       Recover and handle errors if the IEs are incorrect
 	response, problemDetails, err := p.Consumer().SendUeAuthPostRequest(targetNfUri, &authInfo)

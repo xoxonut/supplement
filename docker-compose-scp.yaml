@@ -258,7 +258,7 @@ services:
     build:
       context: ./nf_scp
       args:
-        DEBUG_TOOLS: "false"
+        DEBUG_TOOLS: "true"
     command: ./scp -c ./config/scpcfg.yaml
     expose:
       - "8000"

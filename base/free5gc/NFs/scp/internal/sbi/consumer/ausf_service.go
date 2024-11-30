@@ -1,11 +1,14 @@
 package consumer
 
 import (
+	"context"
+	"net/http"
 	"sync"
 
 	"github.com/free5gc/openapi"
 	"github.com/free5gc/openapi/Nausf_UEAuthentication"
 	"github.com/free5gc/openapi/models"
+	"github.com/free5gc/scp/internal/logger"
 )
 
 type nausfService struct {
@@ -40,7 +43,7 @@ func (s *nausfService) getUEAuthenticationClient(uri string) *Nausf_UEAuthentica
 
 func (s *nausfService) SendUeAuthPostRequest(uri string,
 	authInfo *models.AuthenticationInfo) (*models.UeAuthenticationCtx, *models.ProblemDetails, error) {
-
+	logger.ConsumerLog.Debugf("[AMF->AUSF] Forward AMF UE Authentication Request")
 	client := s.getUEAuthenticationClient(uri)
 	if client == nil {
 		return nil, nil, openapi.ReportError("ausf not found")
@@ -48,6 +51,28 @@ func (s *nausfService) SendUeAuthPostRequest(uri string,
 
 	// TODO: OAuth AUSF Ue Auth Post
 	var ueAuthenticationCtx models.UeAuthenticationCtx
+	response := &http.Response{}
+	err := error(nil)
+	Info := models.AuthenticationInfo(*authInfo)
+	ueAuthenticationCtx, response, err = client.DefaultApi.UeAuthenticationsPost(
+		context.Background(), Info)
+	if response != nil && err != nil {
+		rspCode, rspBody := handleAPIServiceResponseError(response, err)
+		logger.ConsumerLog.Errorf("UE Authentication Response Error: %+v", rspBody)
+		return &ueAuthenticationCtx, &models.ProblemDetails{
+			Status: int32(rspCode),
+			Cause:  rspBody.(*models.ProblemDetails).Cause,
+		}, err
+	}
+	if err != nil {
+		rspCode, rspBody := handleAPIServiceNoResponse(err)
+		return &ueAuthenticationCtx, &models.ProblemDetails{
+			Status: int32(rspCode),
+			Cause:  rspBody.(*models.ProblemDetails).Cause,
+		}, err
+
+	}
+	logger.ConsumerLog.Debugf("UE Authentication Response: %+v", ueAuthenticationCtx)
 	return &ueAuthenticationCtx, nil, nil
 }
 
