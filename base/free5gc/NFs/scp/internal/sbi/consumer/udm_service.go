@@ -6,6 +6,7 @@ import (
 	"github.com/free5gc/openapi"
 	Nudm_UEAU "github.com/free5gc/openapi/Nudm_UEAuthentication"
 	"github.com/free5gc/openapi/models"
+	"github.com/free5gc/scp/internal/logger"
 )
 
 type nudmService struct {
@@ -48,5 +49,28 @@ func (s *nudmService) SendGenerateAuthDataRequest(uri string,
 
 	// TODO: OAuth UDM Generate Auth Data Post
 	var authInfoResult models.AuthenticationInfoResult
+	ctx, problemDetails, err := s.consumer.scp.Context().GetTokenCtx(models.ServiceName_NUDM_UEAU, models.NfType_UDM)
+	if err != nil {
+		return nil, problemDetails, err
+	}
+	authInfoResult, response, err := client.GenerateAuthDataApi.GenerateAuthData(
+		ctx, supiOrSuci, *authInfoReq,
+	)
+	if response != nil && err != nil {
+		rspCode, rspBody := handleAPIServiceResponseError(response, err)
+		logger.ConsumerLog.Errorf("UE Authentication Response Error: %+v", rspBody)
+		return &authInfoResult, &models.ProblemDetails{
+			Status: int32(rspCode),
+			Cause:  rspBody.(*models.ProblemDetails).Cause,
+		}, err
+	}
+	if err != nil {
+		rspCode, rspBody := handleAPIServiceNoResponse(err)
+		return &authInfoResult, &models.ProblemDetails{
+			Status: int32(rspCode),
+			Cause:  rspBody.(*models.ProblemDetails).Cause,
+		}, err
+
+	}
 	return &authInfoResult, nil, nil
 }

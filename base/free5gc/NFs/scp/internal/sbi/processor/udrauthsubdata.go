@@ -14,7 +14,7 @@ func (p *Processor) GetAuthSubsData(
 	logger.DetectorLog.Debugln("[UDM->UDR] Forward UDM Authentication Data Query Request")
 
 	// TODO: Send request to correct NF by setting correct uri
-	var targetNfUri string
+	var targetNfUri = "http://udr.free5gc.org:8000"
 
 	// TODO: Store UE auth subscription data
 	response, problemDetails, err := p.Consumer().SendAuthSubsDataGet(targetNfUri, ueId)

@@ -41,7 +41,7 @@ func (p *Processor) PutUeAutenticationsConfirmation(
 	logger.ProxyLog.Debugln("[AMF->AUSF] Forward AMF UE Authentication Response")
 
 	// TODO: Send request to target NF by setting correct uri
-	var targetNfUri string
+	var targetNfUri = "http://ausf.free5gc.org:8000"
 
 	// TODO: Verify that the Information Elements (IEs) in the response body are correct
 	//       Recover and handle errors if the IEs are incorrect

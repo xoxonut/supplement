@@ -15,7 +15,7 @@ func (p *Processor) PostGenerateAuthData(
 	logger.ProxyLog.Debugln("[AUSF->UDM] Forward AUSF UE Authentication Request")
 
 	// TODO: Send request to target NF by setting correct uri
-	var targetNfUri string
+	var targetNfUri = "http://udm.free5gc.org:8000"
 
 	// TODO: Verify that the Information Elements (IEs) in the request or response body are correct
 	//       Recover and handle errors if the IEs are incorrect

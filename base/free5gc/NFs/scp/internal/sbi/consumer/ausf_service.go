@@ -1,10 +1,10 @@
 package consumer
 
 import (
-	"context"
 	"net/http"
 	"sync"
 
+	"github.com/antihax/optional"
 	"github.com/free5gc/openapi"
 	"github.com/free5gc/openapi/Nausf_UEAuthentication"
 	"github.com/free5gc/openapi/models"
@@ -53,9 +53,12 @@ func (s *nausfService) SendUeAuthPostRequest(uri string,
 	var ueAuthenticationCtx models.UeAuthenticationCtx
 	response := &http.Response{}
 	err := error(nil)
-	Info := models.AuthenticationInfo(*authInfo)
+	ctx, problemDetails, err := s.consumer.scp.Context().GetTokenCtx(models.ServiceName_NAUSF_AUTH, models.NfType_AUSF)
+	if err != nil {
+		return &ueAuthenticationCtx, problemDetails, err
+	}
 	ueAuthenticationCtx, response, err = client.DefaultApi.UeAuthenticationsPost(
-		context.Background(), Info)
+		ctx, *authInfo)
 	if response != nil && err != nil {
 		rspCode, rspBody := handleAPIServiceResponseError(response, err)
 		logger.ConsumerLog.Errorf("UE Authentication Response Error: %+v", rspBody)
@@ -86,5 +89,35 @@ func (s *nausfService) SendAuth5gAkaConfirmRequest(uri string,
 
 	// TODO: OAuth AUSF Auth 5gAka Confirm Put
 	var confirmResult models.ConfirmationDataResponse
+	ctx, problemDetails, err := s.consumer.scp.Context().GetTokenCtx(
+		models.ServiceName_NAUSF_AUTH, models.NfType_AUSF)
+	if err != nil {
+		return &confirmResult, problemDetails, err
+
+	}
+	logger.ConsumerLog.Debugf("[AMF->AUSF] Forward AMF UE Authentication 5gAka Confirm Request")
+	data := optional.NewInterface(*confirmationData)
+	logger.ConsumerLog.Debugf("ConfirmationData: %+v", confirmationData)
+	logger.ConsumerLog.Debugf("Data: %+v", data)
+	confirmResult, response, err := client.DefaultApi.UeAuthenticationsAuthCtxId5gAkaConfirmationPut(
+		ctx, authCtxId, &Nausf_UEAuthentication.UeAuthenticationsAuthCtxId5gAkaConfirmationPutParamOpts{
+			ConfirmationData: data,
+		})
+	if response != nil && err != nil {
+		rspCode, rspBody := handleAPIServiceResponseError(response, err)
+		logger.ConsumerLog.Errorf("Auth 5gAka Confirm Response Error: %+v", rspBody)
+		return &confirmResult, &models.ProblemDetails{
+			Status: int32(rspCode),
+			Cause:  rspBody.(*models.ProblemDetails).Cause,
+		}, err
+	}
+	if err != nil {
+		logger.ConsumerLog.Errorf("Auth 5gAka Confirm Response Error: %+v", err)
+		rspCode, rspBody := handleAPIServiceNoResponse(err)
+		return &confirmResult, &models.ProblemDetails{
+			Status: int32(rspCode),
+			Cause:  rspBody.(*models.ProblemDetails).Cause,
+		}, err
+	}
 	return &confirmResult, nil, nil
 }

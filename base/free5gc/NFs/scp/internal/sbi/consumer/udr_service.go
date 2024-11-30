@@ -6,6 +6,7 @@ import (
 	"github.com/free5gc/openapi"
 	"github.com/free5gc/openapi/Nudr_DataRepository"
 	"github.com/free5gc/openapi/models"
+	"github.com/free5gc/scp/internal/logger"
 )
 
 type nudrService struct {
@@ -43,5 +44,29 @@ func (s *nudrService) SendAuthSubsDataGet(uri string,
 
 	// TODO: OAuth UDR Auth Subs Data Get
 	var authSubs models.AuthenticationSubscription
+	ctx, problemDetails, err := s.consumer.scp.Context().GetTokenCtx(models.ServiceName_NUDR_DR, models.NfType_UDR)
+	if err != nil {
+		return nil, problemDetails, err
+	}
+	authSubs, response, err := client.AuthenticationDataDocumentApi.QueryAuthSubsData(
+		ctx, supi, nil,
+	)
+	if response != nil && err != nil {
+		rspCode, rspBody := handleAPIServiceResponseError(response, err)
+		logger.ConsumerLog.Errorf("UE Authentication Response Error: %+v", rspBody)
+		return &authSubs, &models.ProblemDetails{
+			Status: int32(rspCode),
+			Cause:  rspBody.(*models.ProblemDetails).Cause,
+		}, err
+	}
+	if err != nil {
+		rspCode, rspBody := handleAPIServiceNoResponse(err)
+		return &authSubs, &models.ProblemDetails{
+			Status: int32(rspCode),
+			Cause:  rspBody.(*models.ProblemDetails).Cause,
+		}, err
+
+	}
+
 	return &authSubs, nil, nil
 }
